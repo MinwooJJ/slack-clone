@@ -1,0 +1,22 @@
+{
+	"compilerOptions": {
+		"esModuleInterop": true,  	// import * as React from 'react'; --> import React from 'react';
+		"sourceMap": true, 					// tracking error area
+		"lib": ["ES2020", "DOM"], 	// es2020 grammar
+		"jsx": "react", 						// jsx is for react
+		"module": "esnext", 				// latest grammar
+		"moduleResolution": "Node", // import, export for Node
+		"target": "es5", 						// es2020 --> es5
+		"strict": true, 
+		"resolveJsonModule": true, 	// import json allowed
+		"baseUrl": ".",
+		"paths": {
+			"@hooks/*": ["hooks/*"],
+			"@components/*":["components/*"],
+			"@layouts/*":["layouts/*"],
+			"@pages/*":["pages/*"],
+			"@utils/*":["utils/*"],
+			"@typings/*":["typings/*"]
+		}
+	}
+}
