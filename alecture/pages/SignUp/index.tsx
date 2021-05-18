@@ -1,9 +1,14 @@
 import useInput from '@hooks/useInput';
 import React, { useCallback, useState } from 'react';
 import axios from 'axios';
-import { Header, Form, Label, Input, LinkContainer, Button, Error, Success } from './style';
+import { Header, Form, Label, Input, LinkContainer, Button, Error, Success } from './styles';
+import { Link, Redirect } from 'react-router-dom';
+import useSWR from 'swr';
+import fetcher from '@utils/fetcher';
 
 const SignUp = () => {
+  const { data, error, revalidate } = useSWR('http://localhost:3095/api/users', fetcher);
+
   const [email, onChangeEmail] = useInput('');
   const [nickname, onChangeNickname] = useInput('');
   const [password, setPassword] = useState('');
@@ -64,12 +69,20 @@ const SignUp = () => {
     [email, nickname, password, passwordCheck, mismatchError],
   );
 
+  if (data == undefined) {
+    return <div>Loading...</div>;
+  }
+
+  if (data) {
+    return <Redirect to="/workspace/channel" />;
+  }
+
   return (
     <div id="container">
       <Header>Sleact</Header>
       <Form onSubmit={onSubmit}>
         <Label id="email-label">
-          <span>Email address</span>
+          <span>E-mail address</span>
           <div>
             <Input type="email" id="email" name="email" value={email} onChange={onChangeEmail} />
           </div>
@@ -106,7 +119,7 @@ const SignUp = () => {
       </Form>
       <LinkContainer>
         Already have an account?&nbsp;
-        {/* <Link to="/login">Sign in</Link> */}
+        <Link to="/signin">Sign in</Link>
       </LinkContainer>
     </div>
   );
