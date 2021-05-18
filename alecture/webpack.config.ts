@@ -44,12 +44,11 @@ const config: webpack.Configuration = {
           ],
           env: {
             development: {
-              plugins: [require.resolve('react-refresh/babel')],
+              plugins: [['@emotion', { sourceMap: true }], require.resolve('react-refresh/babel')],
             },
-            // ['@emotion', { sourceMap: true }],
-            // production: {
-            //   plugins: ['@emotion'],
-            // },
+            production: {
+              plugins: ['@emotion'],
+            },
           },
         },
         exclude: path.join(__dirname, 'node_modules'),
@@ -82,12 +81,13 @@ const config: webpack.Configuration = {
     historyApiFallback: true, // to use react router
     port: 3090,
     publicPath: '/dist/',
-    // proxy: {
-    //   '/api/': {
-    //     target: 'http://localhost:3095',
-    //     changeOrigin: true,
-    //   },
-    // },
+    proxy: {
+      // 프론트에서 api로 시작하는 요청은 3095가 보낸거처럼 취급하겠다
+      '/api/': {
+        target: 'http://localhost:3095',
+        changeOrigin: true,
+      },
+    },
   },
 };
 

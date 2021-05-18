@@ -5,6 +5,8 @@
 <p>		3. Typescript</p>
 <p>		4. Webpack and Babel</p>
 <p>	- SPA</p>
-<p>	- Library</p>
+<p>	- Custom hooks</p>
+<p>	- Packages</p>
 <p>		1. react-router</p>
-<p>		2. @loadable/component</p>
+<p>		2. code splitting</p>
+<p>		3. emotion for CSS</p>
