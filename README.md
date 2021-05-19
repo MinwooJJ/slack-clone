@@ -5,6 +5,7 @@
 <p>		3. Typescript</p>
 <p>		4. Webpack and Babel</p>
 <p>	- SPA</p>
+<p>	- SWR instead of Redux</p>
 <p>	- Custom hooks</p>
 <p>	- Packages</p>
 <p>		1. react-router</p>

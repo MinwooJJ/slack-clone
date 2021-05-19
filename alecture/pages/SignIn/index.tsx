@@ -68,6 +68,7 @@ const LogIn = () => {
       </Form>
       <LinkContainer>
         Don't have an account?&nbsp;
+        {/* React-router에서는 a tag가 아닌 Link 사용, a 사용시 새로고침이 되어버리고 Link는 화면 변경만 */}
         <Link to="/signup">Sign up</Link>
       </LinkContainer>
     </div>
