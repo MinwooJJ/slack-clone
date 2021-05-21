@@ -2,6 +2,7 @@ import React from 'react';
 import loadable from '@loadable/component';
 import { Switch, Route, Redirect } from 'react-router-dom';
 
+// Code splitting
 const SignIn = loadable(() => import('@pages/SignIn'));
 const SignUp = loadable(() => import('@pages/SignUp'));
 const Workspace = loadable(() => import('@layouts/Workspace'));
@@ -15,7 +16,10 @@ const App = () => {
       <Redirect exact path="/" to="/signin" />
       <Route path="/signin" component={SignIn} />
       <Route path="/signup" component={SignUp} />
-      <Route path="/workspace" component={Workspace} />
+      {/* /:( route prameter)을 붙이면 특수한 역할을 함, 사용자가 자유롭게 값을 바꿀 수 있는 부분 */}
+      {/* /workspace/test, /workspace/dm... 모두 같은 주소를 나타냄  */}
+      {/* parameter가 아닌 값을 위에 선언해주어야 의도된 바로 동작 할 것임 */}
+      <Route path="/workspace/:workspace" component={Workspace} />
     </Switch>
   );
 };

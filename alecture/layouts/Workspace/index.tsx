@@ -10,44 +10,64 @@ import {
   ProfileModal,
   RightMenu,
   WorkspaceButton,
+  WorkspaceModal,
   WorkspaceName,
   Workspaces,
   WorkspaceWrapper,
 } from './styles';
 import fetcher from '@utils/fetcher';
 import axios from 'axios';
-import React, { FC, useCallback, useState } from 'react';
-import { Redirect, Route, Switch } from 'react-router';
+import React, { VFC, useCallback, useState } from 'react';
+import { Redirect, Route, Switch, useParams } from 'react-router';
 import useSWR from 'swr';
 import gravatar from 'gravatar'; // random으로 icon을 만들어주는 API
 import loadable from '@loadable/component';
 import Menu from '@components/Menu';
 import Modal from '@components/Modal';
 import { Link } from 'react-router-dom';
-import { IUser } from '@typings/db';
+import { IChannel, IUser } from '@typings/db';
 import { Button, Label, Input } from '@pages/SignUp/styles';
 import useInput from '@hooks/useInput';
 import { toast } from 'react-toastify';
+import CreateChannelModal from '@components/CreateChannelModal';
+import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
+import InviteChannelModal from '@components/InviteChannelModal';
+import ChannelList from '@components/ChannelList';
+import DMList from '@components/DMList';
 
 // code split은 router마다 진행
 const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
 
-const Workspace: FC = () => {
+// Children이 필요 없는 component는 VFC 반대는 FC
+const Workspace: VFC = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
+  const [showInviteWorkspaceModal, setShowInviteWorkspaceModal] = useState(false);
+  const [showInviteChannelModal, setShowInviteChannelModal] = useState(false);
+  const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+  const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
 
+  const { workspace } = useParams<{ workspace: string }>();
+  // IUser or false 타입을 가질 수 있음, 2초마다 데이터 확인
+  // SWR이 server로부터 가져온 data를 관리해주기 때문에 SWR만 추가해서 데이터를 가져와 관리 가능
   const {
     data: userData,
     error,
     revalidate,
     mutate,
-  } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher); // IUser or false 타입을 가질 수 있음
+  } = useSWR<IUser | false>('/api/users', fetcher, { dedupingInterval: 2000 });
+
+  // SWR이 workspace와 channel 데이터를 관리해 줌
+  // signin이 되지 않은 상태이면 요청하지 못함
+  const { data: channelData } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher);
+
+  const { data: memberData } = useSWR<IUser[]>(userData ? `/api/workspaces/${workspace}/members` : null, fetcher);
 
   const onSignout = useCallback(() => {
-    axios.post('/api/users/logout', null, { withCredentials: true }).then(() => {
+    axios.post('/api/users/logout', null).then(() => {
       // revalidate(); // false data
       mutate(false, false); // optimistic UI
     });
@@ -67,8 +87,13 @@ const Workspace: FC = () => {
     setShowCreateWorkspaceModal(true);
   }, []);
 
+  // 화면에 있는 모든 Modal을 닫는 method
+  // 모든 modal이 공유함
   const onCloseModal = useCallback(() => {
     setShowCreateWorkspaceModal(false);
+    setShowCreateChannelModal(false);
+    setShowInviteWorkspaceModal(false);
+    setShowInviteChannelModal(false);
   }, []);
 
   const onCreateWorkspace = useCallback(
@@ -95,6 +120,18 @@ const Workspace: FC = () => {
     },
     [newWorkspace, newUrl],
   );
+
+  const toogleWorkspaceModal = useCallback(() => {
+    setShowWorkspaceModal((prev) => !prev);
+  }, []);
+
+  const onClickAddChannel = useCallback(() => {
+    setShowCreateChannelModal(true);
+  }, []);
+
+  const onClickInviteWorkspace = useCallback(() => {
+    setShowInviteWorkspaceModal(true);
+  }, []);
 
   if (!userData) {
     return <Redirect to="/signin" />;
@@ -125,8 +162,8 @@ const Workspace: FC = () => {
       </Header>
       <WorkspaceWrapper>
         <Workspaces>
-          {/* axios에서 받은 데이터에 workspaces 정보가 포함되어 있고 받아서 표시 */}
-          {userData.Workspaces.map((ws) => {
+          {/* axios에서 받은 데이터에 workspaces 정보가 포함되어 있고 받아서 표시, ? optional chaining을 이용해 데이터가 존재하지 않을 경우 오류를 막기 위함 */}
+          {userData?.Workspaces.map((ws) => {
             return (
               <Link key={ws.id} to={`/workspace/${123}/channel/일반`}>
                 {/* Workspace의 이름을 첫 글자를 따서 넣음 */}
@@ -137,13 +174,26 @@ const Workspace: FC = () => {
           <AddButton onClick={onClickCreateWorkspace}>+</AddButton>
         </Workspaces>
         <Channels>
-          <WorkspaceName>Sleack</WorkspaceName>
-          <MenuScroll>MenuSCroll</MenuScroll>
+          <WorkspaceName onClick={toogleWorkspaceModal}>Sleact</WorkspaceName>
+          <MenuScroll>
+            {/* component에 style props를 정의해야 적용이 가능, close modal의 경우 bubbling 조심 */}
+            <Menu show={showWorkspaceModal} onCloseModal={toogleWorkspaceModal} style={{ top: 95, left: 80 }}>
+              <WorkspaceModal>
+                <h2>Sleact</h2>
+                <button onClick={onClickInviteWorkspace}>Invite user to a workspace</button>
+                <button onClick={onClickAddChannel}>Add channel</button>
+                <button onClick={onSignout}>Sign out</button>
+              </WorkspaceModal>
+            </Menu>
+            {/* data가 없을 수 있는 경우는 ? 추가 */}
+            {/* <ChannelList userData={userData} /> */}
+            <DMList />
+          </MenuScroll>
         </Channels>
         <Chats>
           <Switch>
-            <Route path="/workspace/channel" component={Channel} />
-            <Route path="/workspace/dm" component={DirectMessage} />
+            <Route path="/workspace/:workspace/channel/:channel" component={Channel} />
+            <Route path="/workspace/:workspace/dm/:id" component={DirectMessage} />
           </Switch>
         </Chats>
       </WorkspaceWrapper>
@@ -160,6 +210,22 @@ const Workspace: FC = () => {
           <Button type="submit">Create</Button>
         </form>
       </Modal>
+      {/* input이 있는 component는 분리를 할 것임, re-render에서 효율적이므로 */}
+      <CreateChannelModal
+        show={showCreateChannelModal}
+        onCloseModal={onCloseModal}
+        setShowCreateChannelModal={setShowCreateChannelModal}
+      />
+      <InviteWorkspaceModal
+        show={showInviteWorkspaceModal}
+        onCloseModal={onCloseModal}
+        setShowInviteWorkspaceModal={setShowInviteWorkspaceModal}
+      />
+      <InviteChannelModal
+        show={showInviteChannelModal}
+        onCloseModal={onCloseModal}
+        setShowInviteChannelModal={setShowInviteChannelModal}
+      />
     </div>
   );
 };
