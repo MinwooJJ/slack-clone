@@ -7,11 +7,7 @@ import { useParams } from 'react-router';
 import { NavLink } from 'react-router-dom';
 import useSWR from 'swr';
 
-interface Props {
-  userData?: IUser;
-}
-
-const DMList: FC<Props> = () => {
+const DMList: FC = () => {
   // router의 workspace 이름 가져오는 부분
   const { workspace } = useParams<{ workspace?: string }>();
 

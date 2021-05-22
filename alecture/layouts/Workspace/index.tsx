@@ -186,7 +186,7 @@ const Workspace: VFC = () => {
               </WorkspaceModal>
             </Menu>
             {/* data가 없을 수 있는 경우는 ? 추가 */}
-            {/* <ChannelList userData={userData} /> */}
+            <ChannelList />
             <DMList />
           </MenuScroll>
         </Channels>

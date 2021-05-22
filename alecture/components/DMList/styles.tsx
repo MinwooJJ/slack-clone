@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 
 // 접혔다 펴졌다 하는 버튼
+// transform 부분 공부
 export const CollapseButton = styled.button<{ collapse: boolean }>`
   background: transparent;
   border: none;

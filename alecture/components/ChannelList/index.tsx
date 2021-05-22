@@ -10,12 +10,15 @@ import useSWR from 'swr';
 const ChannelList: FC = () => {
   const { workspace } = useParams<{ workspace?: string }>();
   // const [socket] = useSocket(workspace);
+  // SWR은 불러온 데이터를 cashing하고 있다가 계속해서 재사용함, 여러 번 useSWR한다고 하여 데이터를 계속해서 불러오는것은 아님
+  // 실시간성을 알아서 유지해주기 때문에 훨씬 편리한면도 있음
   const {
     data: userData,
     error,
     revalidate,
     mutate,
   } = useSWR<IUser>('/api/users', fetcher, {
+    // 새로 요청을 보내고 싶은것은 dedupingInterval로 control 가능
     dedupingInterval: 2000, // 2초
   });
   const { data: channelData } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher);

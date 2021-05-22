@@ -1,3 +1,7 @@
+// react-app을 설치하면 deps에 어떤걸 빼먹었는지 알려줌
 {
-	"extends": ["plugin:prettier/recommended"]
+	"extends": ["plugin:prettier/recommended", "react-app"],
+	"rules": {
+		"prettier/prettier": ["error", { "endOfLine": "auto"}]
+	}
 }
