@@ -1,4 +1,4 @@
-import { IDM } from '@typings/db';
+import { IChat, IDM } from '@typings/db';
 import React, { memo, useMemo, VFC } from 'react';
 import { ChatWrapper } from './styles';
 import gravatar from 'gravatar'; // random으로 icon을 만들어주는 API
@@ -8,7 +8,7 @@ import { stringify } from 'querystring';
 import { Link, useParams } from 'react-router-dom';
 
 interface Props {
-  data: IDM;
+  data: IDM | IChat;
 }
 
 // 정규표현식은 연산이 많이 들어가기에 성능에 좋지 않다, useMemo: props가 똑가
@@ -17,7 +17,7 @@ interface Props {
 // ()로 정규표현식을 묶는 건 grouping이라는 것이며 묶인 값이 아래에선 arr[1], arr[2]...에 추가됨
 const Chat: VFC<Props> = ({ data }) => {
   const { workspace } = useParams<{ workspace?: string }>();
-  const user = data.Sender;
+  const user = 'Sender' in data ? data.Sender : data.User;
 
   const result = useMemo(
     () =>
