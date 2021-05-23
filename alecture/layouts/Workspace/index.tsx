@@ -17,7 +17,7 @@ import {
 } from './styles';
 import fetcher from '@utils/fetcher';
 import axios from 'axios';
-import React, { VFC, useCallback, useState } from 'react';
+import React, { VFC, useCallback, useState, useEffect } from 'react';
 import { Redirect, Route, Switch, useParams } from 'react-router';
 import useSWR from 'swr';
 import gravatar from 'gravatar'; // random으로 icon을 만들어주는 API
@@ -34,6 +34,7 @@ import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
 import InviteChannelModal from '@components/InviteChannelModal';
 import ChannelList from '@components/ChannelList';
 import DMList from '@components/DMList';
+import useSocket from '@hooks/useSocket';
 
 // code split은 router마다 진행
 const Channel = loadable(() => import('@pages/Channel'));
@@ -63,8 +64,25 @@ const Workspace: VFC = () => {
   // SWR이 workspace와 channel 데이터를 관리해 줌
   // signin이 되지 않은 상태이면 요청하지 못함
   const { data: channelData } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher);
-
   const { data: memberData } = useSWR<IUser[]>(userData ? `/api/workspaces/${workspace}/members` : null, fetcher);
+  const [socket, disconnect] = useSocket(workspace);
+
+  // sign in
+  useEffect(() => {
+    // socket이 undefined일 경우도 있으므로 확실히 있다는 것을 보장해주어야 함
+    if (channelData && userData && socket) {
+      // console.log(socket);
+      socket.emit('login', { id: userData.id, channels: channelData.map((v) => v.id) });
+    }
+    // 내부에서 쓰이지 않는 외부 변수들의 경우는 넣어주어야 함 deps
+  }, [socket, channelData, userData]);
+
+  useEffect(() => {
+    return () => {
+      disconnect();
+    };
+    // workspace가 바뀔때 동작해야하므로
+  }, [workspace, disconnect]);
 
   const onSignout = useCallback(() => {
     axios.post('/api/users/logout', null).then(() => {

@@ -1,4 +1,5 @@
 import { CollapseButton } from '@components/DMList/styles';
+import useSocket from '@hooks/useSocket';
 // import useSocket from '@hooks/useSocket';
 import { IUser, IUserWithOnline } from '@typings/db';
 import fetcher from '@utils/fetcher';
@@ -26,7 +27,8 @@ const DMList: FC = () => {
     userData ? `/api/workspaces/${workspace}/members` : null,
     fetcher,
   );
-  // const [socket] = useSocket(workspace);
+  // useSocket은 공통으로 관리 됨, 다른 화면이 꺼져도 계속해서 유지 가능
+  const [socket] = useSocket(workspace);
   // true면 멤버목록 숨기기, false면 보이기
   const [channelCollapse, setChannelCollapse] = useState(false);
   const [onlineList, setOnlineList] = useState<number[]>([]);
@@ -40,18 +42,21 @@ const DMList: FC = () => {
     setOnlineList([]);
   }, [workspace]);
 
-  // useEffect(() => {
-  //   socket?.on('onlineList', (data: number[]) => {
-  //     setOnlineList(data);
-  //   });
-  //   // socket?.on('dm', onMessage);
-  //   // console.log('socket on dm', socket?.hasListeners('dm'), socket);
-  //   return () => {
-  //     // socket?.off('dm', onMessage);
-  //     // console.log('socket off dm', socket?.hasListeners('dm'));
-  //     socket?.off('onlineList');
-  //   };
-  // }, [socket]);
+  // 다른 사람이 sign in 하였을 경우 DM list에 추가
+  useEffect(() => {
+    // on을 여러번하고 off를 하지 않으면 데이터를 연결한만큼 여러번 받는 경우가 생김, 항상 off 고려
+    socket?.on('onlineList', (data: number[]) => {
+      setOnlineList(data);
+    });
+    // socket?.on('dm', onMessage);
+    // console.log('socket on dm', socket?.hasListeners('dm'), socket);
+    return () => {
+      // socket?.off('dm', onMessage);
+      // console.log('socket off dm', socket?.hasListeners('dm'));
+      // on이 있으면 그 데이터를 정리해주는 off도 존재
+      socket?.off('onlineList');
+    };
+  }, [socket]);
 
   return (
     <>

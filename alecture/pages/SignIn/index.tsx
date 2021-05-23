@@ -25,8 +25,8 @@ const LogIn = () => {
       axios
         .post('/api/users/login', { email, password })
         .then((response) => {
-          mutate(response.data, false); // 서버에 요청을 보내지 않고 데이터 수정, 두 번째 인수는 데이터가 바뀐것이 있나 점검하는 것, 정해진 기간마다 데이터 확인을 위해 fetcher를 실행함
-          // revalidate();       // 서버에 요청을 보내서 데이터를 가져오는 것
+          // mutate(response.data, false); // 서버에 요청을 보내지 않고 데이터 수정, 두 번째 인수는 데이터가 바뀐것이 있나 점검하는 것, 정해진 기간마다 데이터 확인을 위해 fetcher를 실행함
+          revalidate(); // 서버에 요청을 보내서 데이터를 가져오는 것
           // mutate('http://localhost:3095/api/users', response.data); // 범용적으로 사용시
         })
         .catch((error) => {
@@ -38,7 +38,7 @@ const LogIn = () => {
 
   // if there is case of 'false' data
   // redirect시 data가 없는 경우 나은 사용자 경험을 위해 loading으로 처리 가능
-  if (data == undefined) {
+  if (data === undefined) {
     return <div>Loading...</div>;
   }
 

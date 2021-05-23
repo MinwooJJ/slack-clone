@@ -58,7 +58,7 @@ const DirectMessage = () => {
         <span>{userData.nickname}</span>
       </Header>
       {/* 채팅 목록, 입력창*/}
-      <ChatList />
+      <ChatList chatData={chatData} />
       <ChatBox chat={chat} onSubmitForm={onSubmitForm} onChangeChat={onChangeChat} />
     </Container>
   );
