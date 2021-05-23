@@ -10,6 +10,7 @@ import ChatList from '@components/ChatList';
 import useInput from '@hooks/useInput';
 import axios from 'axios';
 import { IDM } from '@typings/db';
+import makeSection from '@utils/makeSection';
 
 // DM display 부분
 const DirectMessage = () => {
@@ -51,6 +52,9 @@ const DirectMessage = () => {
     return null;
   }
 
+  // chatDate.reverse() 해버리면 기존 배열이 바뀌어 버리므로 immutable한 방법으로
+  const chatSections = makeSection(chatData ? [...chatData].reverse() : []);
+
   return (
     <Container>
       <Header>
@@ -58,7 +62,7 @@ const DirectMessage = () => {
         <span>{userData.nickname}</span>
       </Header>
       {/* 채팅 목록, 입력창*/}
-      <ChatList chatData={chatData} />
+      <ChatList chatSections={chatSections} />
       <ChatBox chat={chat} onSubmitForm={onSubmitForm} onChangeChat={onChangeChat} />
     </Container>
   );
