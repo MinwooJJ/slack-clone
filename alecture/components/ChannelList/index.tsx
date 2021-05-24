@@ -42,6 +42,7 @@ const ChannelList: FC = () => {
       </h2>
       <div>
         {!channelCollapse &&
+          // map 사용시에 return tag는 최적화를 위해 컴포넌트로 뺴는것을 추천, 아래는 안 뺌
           channelData?.map((channel) => {
             return (
               <NavLink

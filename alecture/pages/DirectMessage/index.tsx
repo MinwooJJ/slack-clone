@@ -1,10 +1,9 @@
-import React, { useCallback, useEffect, useRef } from 'react';
-import { Header } from './styles';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { DragOver, Header, Container } from './styles';
 import gravatar from 'gravatar'; // random으로 icon을 만들어주는 API
 import { useParams } from 'react-router';
 import fetcher from '@utils/fetcher';
 import useSWR, { useSWRInfinite } from 'swr';
-import { Container } from './styles';
 import ChatBox from '@components/ChatBox';
 import ChatList from '@components/ChatList';
 import useInput from '@hooks/useInput';
@@ -12,18 +11,21 @@ import axios from 'axios';
 import { IDM } from '@typings/db';
 import makeSection from '@utils/makeSection';
 import Scrollbars from 'react-custom-scrollbars';
+import useSocket from '@hooks/useSocket';
 
 // DM display 부분
 const DirectMessage = () => {
+  const [dragOver, setDragOver] = useState(false);
   const { workspace, id } = useParams<{ workspace: string; id: string }>();
   const { data: userData } = useSWR(`/api/workspaces/${workspace}/users/${id}`, fetcher);
   const { data: myData } = useSWR('/api/users', fetcher);
   const scrollbarRef = useRef<Scrollbars>(null);
-
+  // socket for DM 연결하기
+  const [socket] = useSocket(workspace);
   // 공통적으로 쓰이는 data가 아닌 경우는 부모쪽에서 정의하여 props로 내린다
   const [chat, onChangeChat, setChat] = useInput('');
   // 채팅 데이터는 받아오는 api
-  //infinite 사용시 첫 번째 인자가 함수가 되어야 함
+  // infinite 사용시 첫 번째 인자가 함수가 되어야 함
   const {
     data: chatData,
     mutate: mutateChat,
@@ -86,12 +88,83 @@ const DirectMessage = () => {
     [chat, chatData, myData, userData, workspace, id],
   );
 
+  const onMessage = useCallback((data: IDM) => {
+    // id: 상대방 아이디, 내 아이디가 아닌것, 위에서 내 아이디의 mutate는 이미 하고 있기 때문
+    // 서버에서 데이터를 실시간으로 가져오는데 굳이 서버로 데이터를 요청 할 필요는 없음( revalidate x) --> mutate
+    if (data.SenderId === Number(id) && myData.id !== Number(id)) {
+      mutateChat((chatData) => {
+        chatData?.[0].unshift(data);
+        return chatData;
+      }, false).then(() => {
+        if (scrollbarRef.current) {
+          if (
+            // 내가 150px 이상 올렸을 경우 남이 채팅을 칠 경우 스크롤바가 내려가지 않고 이하면 내려감
+            scrollbarRef.current.getScrollHeight() <
+            scrollbarRef.current.getClientHeight() + scrollbarRef.current.getScrollTop() + 150
+          ) {
+            console.log('scrollToBottom!', scrollbarRef.current?.getValues());
+            // 살짝 딜레이?? 최신화 왜 ??
+            // 개체가 null 인듯 합니다,
+            setTimeout(() => {
+              scrollbarRef.current?.scrollToBottom();
+            }, 50);
+            // scrollbarRef.current.scrollToBottom();
+          }
+        }
+      });
+    }
+  }, []);
+
+  // socket 연결 후 dm보내기
+  useEffect(() => {
+    socket?.on('dm', onMessage);
+    return () => {
+      socket?.off('dm', onMessage);
+    };
+  }, [socket, onMessage]);
+
   // 로딩 시 scroll bar를 가장 아래로 내리는 부분
   useEffect(() => {
     if (chatData?.length === 1) {
       scrollbarRef.current?.scrollToBottom();
     }
   }, [chatData]);
+
+  const onDrop = useCallback(
+    (e) => {
+      e.preventDefault();
+      console.log(e);
+      const formData = new FormData();
+      if (e.dataTransfer.items) {
+        // Use DataTransferItemList interface to access the file(s)
+        for (let i = 0; i < e.dataTransfer.items.length; i++) {
+          // If dropped items aren't files, reject them
+          if (e.dataTransfer.items[i].kind === 'file') {
+            const file = e.dataTransfer.items[i].getAsFile();
+            console.log('... file[' + i + '].name = ' + file.name);
+            formData.append('image', file);
+          }
+        }
+      } else {
+        // Use DataTransfer interface to access the file(s)
+        for (let i = 0; i < e.dataTransfer.files.length; i++) {
+          console.log('... file[' + i + '].name = ' + e.dataTransfer.files[i].name);
+          formData.append('image', e.dataTransfer.files[i]);
+        }
+      }
+      axios.post(`/api/workspaces/${workspace}/dms/${id}/images`, formData).then(() => {
+        setDragOver(false);
+        revalidate();
+      });
+    },
+    [revalidate, workspace, id],
+  );
+
+  const onDragOver = useCallback((e) => {
+    e.preventDefault();
+    console.log(e);
+    setDragOver(true);
+  }, []);
 
   // data error 혹은 loading중
   if (!userData || !myData) {
@@ -103,14 +176,14 @@ const DirectMessage = () => {
   const chatSections = makeSection(chatData ? chatData.flat().reverse() : []);
 
   return (
-    <Container>
+    <Container onDrop={onDrop} onDragOver={onDragOver}>
       <Header>
         <img src={gravatar.url(userData.email, { s: '24px', d: 'retro' })} alt={userData.nickname} />
         <span>{userData.nickname}</span>
       </Header>
-      {/* 채팅 목록, 입력창*/}
       <ChatList chatSections={chatSections} ref={scrollbarRef} setSize={setSize} isReachingEnd={isReachingEnd} />
-      <ChatBox chat={chat} onSubmitForm={onSubmitForm} onChangeChat={onChangeChat} />
+      <ChatBox chat={chat} onChangeChat={onChangeChat} onSubmitForm={onSubmitForm} />
+      {dragOver && <DragOver>Image Upload</DragOver>}
     </Container>
   );
 };

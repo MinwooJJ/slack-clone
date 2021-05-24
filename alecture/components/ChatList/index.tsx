@@ -36,6 +36,7 @@ const ChatList = forwardRef<Scrollbars, Props>(({ chatSections, setSize, isReach
       <Scrollbars autoHide ref={scrollRef} onScrollFrame={onScroll}>
         {/* 객체의 반복문 */}
         {Object.entries(chatSections).map(([date, chats]) => {
+          1;
           return (
             <Section className={`section-${date}`} key={date}>
               <StickyHeader>
