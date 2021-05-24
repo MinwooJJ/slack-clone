@@ -1,13 +1,14 @@
-<h1>Front-end side Slack clone with React</h1>
-<p>	- Set environment to manual</p>
-<p>		1. eslint</p>
-<p>		2. prettierrc</p>
-<p>		3. Typescript</p>
-<p>		4. Webpack and Babel</p>
-<p>	- SPA</p>
-<p>	- SWR instead of Redux</p>
-<p>	- Custom hooks</p>
-<p>	- Packages</p>
-<p>		1. react-router</p>
-<p>		2. code splitting</p>
-<p>		3. emotion for CSS</p>
+# Slack clone project - Front End
+
+- typescript
+- eslint
+- prettier
+- webpack
+- babel
+- emotion( styled-components)
+- react-router
+- loadable/component( code split)
+- axios( AJAX)
+- SWR( instead of Redux)
+- socket.io
+- react hooks
