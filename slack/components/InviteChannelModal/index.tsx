@@ -34,7 +34,6 @@ const InviteChannelModal: FC<Props> = ({ show, onCloseModal, setShowInviteChanne
           email: newMember,
         })
         .then(() => {
-          // 추가 된 member를 다시 data에 담도록 하는 것
           revalidateMembers();
           setShowInviteChannelModal(false);
           setNewMember('');

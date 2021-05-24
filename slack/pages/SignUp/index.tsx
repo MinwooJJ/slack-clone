@@ -7,7 +7,7 @@ import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 
 const SignUp = () => {
-  const { data, error, revalidate } = useSWR('/api/users', fetcher);
+  const { data } = useSWR('/api/users', fetcher);
 
   const [email, onChangeEmail] = useInput('');
   const [nickname, onChangeNickname] = useInput('');
@@ -16,14 +16,6 @@ const SignUp = () => {
   const [mismatchError, setMismatchError] = useState(false);
   const [signUpError, setSignUpError] = useState('');
   const [signUpSuccess, setSignUpSuccess] = useState(false);
-
-  // const onChangeEmail = useCallback((e) => {
-  //   setEmail(e.target.value);
-  // }, []);
-
-  // const onChangeNickname = useCallback((e) => {
-  //   setNickname(e.target.value);
-  // }, []);
 
   const onChangePassword = useCallback(
     (e) => {
@@ -69,7 +61,7 @@ const SignUp = () => {
     [email, nickname, password, passwordCheck, mismatchError],
   );
 
-  if (data == undefined) {
+  if (data === undefined) {
     return <div>Loading...</div>;
   }
 

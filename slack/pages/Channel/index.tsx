@@ -38,12 +38,6 @@ const Channel = () => {
   const [showInviteChannelModal, setShowInviteChannelModal] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
-  // optimistic UI에서는 데이터 순서가 꼬일 수 있다
-  // revalidate를 해준다면 해결되는 문제, 순서를 잘 맞춰야 오해나 분쟁의 문제가 없을 수 있음
-  // 0초 A: 안녕~(optimistic UI)
-  // 1초 B: 안녕~
-  // 2초 A: 안녕~(실제 서버)
-
   const onSubmitForm = useCallback(
     (e) => {
       e.preventDefault();
@@ -80,8 +74,6 @@ const Channel = () => {
 
   const onMessage = useCallback(
     (data: IChat) => {
-      // id는 상대방 아이디
-      // 파일 업로드는 optimistic UI를 적용받지 않기에 바로 업로드 되도록 조건
       if (data.Channel.name === channel && (data.content.startsWith('uploads\\') || data.UserId !== myData?.id)) {
         mutateChat((chatData) => {
           chatData?.[0].unshift(data);
@@ -111,7 +103,6 @@ const Channel = () => {
     };
   }, [socket, onMessage]);
 
-  // 로딩 시 스크롤바 제일 아래로
   useEffect(() => {
     if (chatData?.length === 1) {
       console.log('toBottomWhenLoaded', scrollbarRef.current);
@@ -133,7 +124,6 @@ const Channel = () => {
   const onChangeFile = useCallback((e) => {
     const formData = new FormData();
     if (e.target.files) {
-      // Use DataTransferItemList interface to access the file(s)
       for (let i = 0; i < e.target.files.length; i++) {
         const file = e.target.files[i].getAsFile();
         console.log('... file[' + i + '].name = ' + file.name);
@@ -166,16 +156,13 @@ const Channel = () => {
           formData.append('image', e.dataTransfer.files[i]);
         }
       }
-      // 파일을 보낼때는 formData
       axios.post(`/api/workspaces/${workspace}/channels/${channel}/images`, formData).then(() => {
         setDragOver(false);
       });
     },
-    // 파일 업로드 후 서버데이터 업데이트
     [workspace, channel],
   );
 
-  // 마우스를 잡고있는 동안의 이벤트
   const onDragOver = useCallback((e) => {
     e.preventDefault();
     console.log(e);
@@ -188,7 +175,6 @@ const Channel = () => {
 
   const chatSections = makeSection(chatData ? chatData.flat().reverse() : []);
 
-  // onDrop: 마우스 떼는 순간, onDragOver: 마우스를 잡고 있는 동안
   return (
     <Container onDrop={onDrop} onDragOver={onDragOver}>
       <Header>

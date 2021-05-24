@@ -16,7 +16,6 @@ export const Form = styled.form`
   border: 1px solid rgb(29, 28, 29);
 `;
 
-// 기존 컴포넌트에 css 추가
 export const MentionsTextarea = styled(MentionsInput)`
   font-family: Slack-Lato, appleLogo, sans-serif;
   font-size: 15px;
@@ -62,9 +61,6 @@ export const SendButton = styled.button`
   top: 5px;
 `;
 
-// props로 변수를 넘겨 받아 조건에 맞춰 style을 꾸밀 수 있음
-// ``가 함수 호출문임
-// 아래의 focus 문은 a`${() => {}}` 이런 상황임
 export const EachMention = styled.button<{ focus: boolean }>`
   padding: 4px 20px;
   background: transparent;

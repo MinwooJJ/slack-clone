@@ -2,7 +2,6 @@ import { IDM, IChat } from '@typings/db';
 import dayjs from 'dayjs';
 
 export default function makeSection(chatList: (IDM | IChat)[]) {
-  // 빈 배열 typescript
   const sections: { [key: string]: (IDM | IChat)[] } = {};
   chatList.forEach((chat) => {
     const monthDate = dayjs(chat.createdAt).format('YYYY-MM-DD');
@@ -14,11 +13,3 @@ export default function makeSection(chatList: (IDM | IChat)[]) {
   });
   return sections;
 }
-
-// [{ id: 1, d:' 2021-02-25'}, { id: 2, d:' 2021-02-23'}, { id: 3, d:' 2021-02-24'}, { id: 4, d:' 2021-02-25'}]
-
-// sections = {
-//   '2021-02-25': [1, 4],
-//   '2021-02-23': [2],
-//   '2021-02-24': [3],
-// };

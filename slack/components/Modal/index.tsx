@@ -8,7 +8,7 @@ interface Props {
 
 const Modal: FC<Props> = ({ show, children, onCloseModal }) => {
   const stopPropagation = useCallback((e) => {
-    e.stopPropagation(); // evetn bubbling을 막는 역할
+    e.stopPropagation();
   }, []);
 
   if (!show) {
