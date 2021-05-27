@@ -1,4 +1,4 @@
-import { CollapseButton } from '@components/DMList/styles';
+import { CollapseButton } from './styles';
 import { IChannel, IUser } from '@typings/db';
 import fetcher from '@utils/fetcher';
 import React, { FC, useCallback, useState } from 'react';
